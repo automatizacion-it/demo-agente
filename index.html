@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>demo-agente — CI/CD Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0a0e17;
+    --surface:  #111827;
+    --border:   #1e2d40;
+    --accent:   #00e5ff;
+    --accent2:  #7c3aed;
+    --green:    #22c55e;
+    --amber:    #f59e0b;
+    --text:     #e2e8f0;
+    --muted:    #64748b;
+    --mono:     'JetBrains Mono', monospace;
+    --sans:     'Syne', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow top */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(0,229,255,0.07) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 56px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo-area h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: #fff;
+  }
+
+  .logo-area h1 span {
+    color: var(--accent);
+  }
+
+  .logo-area p {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 8px;
+    letter-spacing: 0.08em;
+  }
+
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--green);
+    white-space: nowrap;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  /* Cards grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .card:hover {
+    border-color: rgba(0,229,255,0.3);
+    transform: translateY(-2px);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card-label {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .card-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .card-value.accent { color: var(--accent); }
+  .card-value.green  { color: var(--green); }
+  .card-value.amber  { color: var(--amber); }
+
+  .card-sub {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  /* Pipeline section */
+  .section-title {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    margin-top: 32px;
+  }
+
+  .pipeline {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+
+  .pipeline-steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .step-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+  }
+
+  .step-icon.done {
+    background: rgba(34,197,94,0.1);
+    border-color: rgba(34,197,94,0.3);
+  }
+
+  .step-name {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+
+  .step-connector {
+    flex: 0 0 24px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--green), var(--accent));
+    margin-bottom: 28px;
+    opacity: 0.5;
+  }
+
+  @media (max-width: 500px) {
+    .step-connector { display: none; }
+    .step { min-width: 60px; }
+  }
+
+  /* Log terminal */
+  .terminal {
+    background: #070b12;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .terminal-bar {
+    background: #0d1117;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .t-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+  .t-dot.red    { background: #ff5f57; }
+  .t-dot.yellow { background: #febc2e; }
+  .t-dot.green  { background: #28c840; }
+
+  .terminal-title {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-left: 8px;
+    letter-spacing: 0.05em;
+  }
+
+  .terminal-body {
+    padding: 20px 24px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.9;
+  }
+
+  .log-line { display: block; }
+  .log-dim  { color: #334155; }
+  .log-muted{ color: var(--muted); }
+  .log-green{ color: var(--green); }
+  .log-cyan { color: var(--accent); }
+  .log-amber{ color: var(--amber); }
+
+  /* Buttons */
+  .actions-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn-primary:hover { background: #33eaff; transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Footer */
+  footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  footer p {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  footer span {
+    color: var(--accent);
+  }
+
+  /* Animate in */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card, .pipeline, .terminal {
+    animation: fadeUp 0.5s ease both;
+  }
+  .card:nth-child(1) { animation-delay: 0.05s; }
+  .card:nth-child(2) { animation-delay: 0.10s; }
+  .card:nth-child(3) { animation-delay: 0.15s; }
+  .pipeline          { animation-delay: 0.20s; }
+  .terminal          { animation-delay: 0.25s; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-area">
+      <h1>demo<span>-agente</span></h1>
+      <p>automatizacion-it / demo-agente &nbsp;·&nbsp; main</p>
+    </div>
+    <div class="status-badge">
+      <div class="dot"></div>
+      workflow activo
+    </div>
+  </header>
+
+  <!-- Métricas -->
+  <div class="grid">
+    <div class="card">
+      <div class="card-label">último run</div>
+      <div class="card-value green">✓ OK</div>
+      <div class="card-sub">9s · workflow_dispatch</div>
+    </div>
+    <div class="card">
+      <div class="card-label">workflow ID</div>
+      <div class="card-value accent">283865867</div>
+      <div class="card-sub">health-check.yml</div>
+    </div>
+    <div class="card">
+      <div class="card-label">frecuencia</div>
+      <div class="card-value amber">*/5 min</div>
+      <div class="card-sub">cron schedule · UTC</div>
+    </div>
+  </div>
+
+  <!-- Pipeline -->
+  <p class="section-title">pipeline CI/CD</p>
+  <div class="pipeline">
+    <div class="pipeline-steps">
+      <div class="step">
+        <div class="step-icon done">📝</div>
+        <div class="step-name">git push</div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step">
+        <div class="step-icon done">⚡</div>
+        <div class="step-name">trigger</div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step">
+        <div class="step-icon done">🐧</div>
+        <div class="step-name">ubuntu runner</div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step">
+        <div class="step-icon done">✅</div>
+        <div class="step-name">verificar</div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step">
+        <div class="step-icon done">🚀</div>
+        <div class="step-name">deploy</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terminal log -->
+  <p class="section-title">log del último run</p>
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="t-dot red"></div>
+      <div class="t-dot yellow"></div>
+      <div class="t-dot green"></div>
+      <span class="terminal-title">health-check.yml · run #26484125492</span>
+    </div>
+    <div class="terminal-body">
+      <span class="log-line log-dim">──────────────────────────────────────────</span>
+      <span class="log-line log-muted">▶  Set up job</span>
+      <span class="log-line log-green">✓  runner: ubuntu-24.04 (2vCPU / 7GB RAM)</span>
+      <span class="log-line log-dim">──────────────────────────────────────────</span>
+      <span class="log-line log-muted">▶  Verificar estado del repo</span>
+      <span class="log-line log-cyan">   Verificacion ejecutada: Mon May 26 23:48 UTC 2026</span>
+      <span class="log-line log-cyan">   Rama: refs/heads/main</span>
+      <span class="log-line log-cyan">   Repo: automatizacion-it/demo-agente</span>
+      <span class="log-line log-dim">──────────────────────────────────────────</span>
+      <span class="log-line log-green">✓  Completed in 9s · exit code 0</span>
+    </div>
+  </div>
+
+  <!-- Botones -->
+  <div class="actions-row">
+    <a class="btn btn-primary" href="https://github.com/automatizacion-it/demo-agente/actions" target="_blank">
+      ⚡ Ver Actions
+    </a>
+    <a class="btn btn-secondary" href="https://github.com/automatizacion-it/demo-agente" target="_blank">
+      ⌥ Ver Repositorio
+    </a>
+    <a class="btn btn-secondary" href="https://github.com/automatizacion-it/demo-agente/issues" target="_blank">
+      ◎ Ver Issues
+    </a>
+  </div>
+
+  <footer>
+    <p>desplegado con <span>GitHub Pages</span> · CI/CD via <span>GitHub Actions</span></p>
+    <p>automatizacion-it · 2026</p>
+  </footer>
+
+</div>
+</body>
+</html>
