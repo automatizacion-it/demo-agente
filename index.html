@@ -7,21 +7,20 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg:       #0a0e17;
-    --surface:  #111827;
-    --border:   #1e2d40;
-    --accent:   #00e5ff;
-    --accent2:  #7c3aed;
-    --green:    #22c55e;
-    --amber:    #f59e0b;
-    --text:     #e2e8f0;
-    --muted:    #64748b;
-    --mono:     'JetBrains Mono', monospace;
-    --sans:     'Syne', sans-serif;
+    --bg:      #0a0e17;
+    --surface: #111827;
+    --border:  #1e2d40;
+    --accent:  #00e5ff;
+    --accent2: #7c3aed;
+    --green:   #22c55e;
+    --red:     #ef4444;
+    --amber:   #f59e0b;
+    --text:    #e2e8f0;
+    --muted:   #64748b;
+    --mono:    'JetBrains Mono', monospace;
+    --sans:    'Syne', sans-serif;
   }
-
   body {
     background: var(--bg);
     color: var(--text);
@@ -29,8 +28,6 @@
     min-height: 100vh;
     overflow-x: hidden;
   }
-
-  /* Grid background */
   body::before {
     content: '';
     position: fixed;
@@ -43,21 +40,16 @@
     pointer-events: none;
     z-index: 0;
   }
-
-  /* Glow top */
   body::after {
     content: '';
     position: fixed;
-    top: -200px;
-    left: 50%;
+    top: -200px; left: 50%;
     transform: translateX(-50%);
-    width: 800px;
-    height: 400px;
+    width: 800px; height: 400px;
     background: radial-gradient(ellipse, rgba(0,229,255,0.07) 0%, transparent 70%);
     pointer-events: none;
     z-index: 0;
   }
-
   .container {
     position: relative;
     z-index: 1;
@@ -65,8 +57,6 @@
     margin: 0 auto;
     padding: 48px 24px 80px;
   }
-
-  /* Header */
   header {
     display: flex;
     align-items: flex-start;
@@ -75,7 +65,6 @@
     flex-wrap: wrap;
     gap: 16px;
   }
-
   .logo-area h1 {
     font-size: 2.2rem;
     font-weight: 800;
@@ -83,11 +72,7 @@
     line-height: 1;
     color: #fff;
   }
-
-  .logo-area h1 span {
-    color: var(--accent);
-  }
-
+  .logo-area h1 span { color: var(--accent); }
   .logo-area p {
     font-family: var(--mono);
     font-size: 0.75rem;
@@ -95,7 +80,6 @@
     margin-top: 8px;
     letter-spacing: 0.08em;
   }
-
   .status-badge {
     display: flex;
     align-items: center;
@@ -108,33 +92,45 @@
     font-size: 0.75rem;
     color: var(--green);
     white-space: nowrap;
+    transition: all 0.3s;
   }
-
+  .status-badge.loading {
+    background: rgba(245,158,11,0.1);
+    border-color: rgba(245,158,11,0.3);
+    color: var(--amber);
+  }
+  .status-badge.error {
+    background: rgba(239,68,68,0.1);
+    border-color: rgba(239,68,68,0.3);
+    color: var(--red);
+  }
   .dot {
-    width: 8px;
-    height: 8px;
+    width: 8px; height: 8px;
     border-radius: 50%;
-    background: var(--green);
+    background: currentColor;
     animation: pulse 2s ease-in-out infinite;
   }
-
   @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.5; transform: scale(0.85); }
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.5; transform:scale(0.85); }
   }
-
-  /* Cards grid */
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .spinner {
+    width: 8px; height: 8px;
+    border: 2px solid var(--amber);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
   .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 16px;
     margin-bottom: 24px;
   }
-
-  @media (max-width: 600px) {
-    .grid { grid-template-columns: 1fr; }
-  }
-
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -143,13 +139,9 @@
     position: relative;
     overflow: hidden;
     transition: border-color 0.2s, transform 0.2s;
+    animation: fadeUp 0.5s ease both;
   }
-
-  .card:hover {
-    border-color: rgba(0,229,255,0.3);
-    transform: translateY(-2px);
-  }
-
+  .card:hover { border-color: rgba(0,229,255,0.3); transform: translateY(-2px); }
   .card::before {
     content: '';
     position: absolute;
@@ -159,9 +151,10 @@
     opacity: 0;
     transition: opacity 0.2s;
   }
-
   .card:hover::before { opacity: 1; }
-
+  .card:nth-child(1) { animation-delay: 0.05s; }
+  .card:nth-child(2) { animation-delay: 0.10s; }
+  .card:nth-child(3) { animation-delay: 0.15s; }
   .card-label {
     font-family: var(--mono);
     font-size: 0.65rem;
@@ -170,26 +163,24 @@
     text-transform: uppercase;
     margin-bottom: 10px;
   }
-
   .card-value {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: #fff;
     line-height: 1;
+    min-height: 1.5rem;
   }
-
   .card-value.accent { color: var(--accent); }
   .card-value.green  { color: var(--green); }
   .card-value.amber  { color: var(--amber); }
-
+  .card-value.red    { color: var(--red); }
   .card-sub {
     font-family: var(--mono);
     font-size: 0.7rem;
     color: var(--muted);
     margin-top: 6px;
+    min-height: 1rem;
   }
-
-  /* Pipeline section */
   .section-title {
     font-family: var(--mono);
     font-size: 0.7rem;
@@ -199,78 +190,14 @@
     margin-bottom: 16px;
     margin-top: 32px;
   }
-
-  .pipeline {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px;
-    margin-bottom: 24px;
-  }
-
-  .pipeline-steps {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    flex-wrap: wrap;
-  }
-
-  .step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-    min-width: 100px;
-  }
-
-  .step-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
-    background: rgba(0,229,255,0.08);
-    border: 1px solid rgba(0,229,255,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-  }
-
-  .step-icon.done {
-    background: rgba(34,197,94,0.1);
-    border-color: rgba(34,197,94,0.3);
-  }
-
-  .step-name {
-    font-family: var(--mono);
-    font-size: 0.65rem;
-    color: var(--muted);
-    text-align: center;
-    letter-spacing: 0.05em;
-  }
-
-  .step-connector {
-    flex: 0 0 24px;
-    height: 1px;
-    background: linear-gradient(90deg, var(--green), var(--accent));
-    margin-bottom: 28px;
-    opacity: 0.5;
-  }
-
-  @media (max-width: 500px) {
-    .step-connector { display: none; }
-    .step { min-width: 60px; }
-  }
-
-  /* Log terminal */
   .terminal {
     background: #070b12;
     border: 1px solid var(--border);
     border-radius: 12px;
     overflow: hidden;
     margin-bottom: 24px;
+    animation: fadeUp 0.5s ease 0.25s both;
   }
-
   .terminal-bar {
     background: #0d1117;
     padding: 10px 16px;
@@ -279,15 +206,10 @@
     gap: 8px;
     border-bottom: 1px solid var(--border);
   }
-
-  .t-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-  }
-  .t-dot.red    { background: #ff5f57; }
-  .t-dot.yellow { background: #febc2e; }
-  .t-dot.green  { background: #28c840; }
-
+  .t-dot { width:10px; height:10px; border-radius:50%; }
+  .t-dot.red    { background:#ff5f57; }
+  .t-dot.yellow { background:#febc2e; }
+  .t-dot.green  { background:#28c840; }
   .terminal-title {
     font-family: var(--mono);
     font-size: 0.7rem;
@@ -295,29 +217,65 @@
     margin-left: 8px;
     letter-spacing: 0.05em;
   }
-
+  .refresh-info {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-left: auto;
+  }
   .terminal-body {
     padding: 20px 24px;
     font-family: var(--mono);
     font-size: 0.78rem;
     line-height: 1.9;
   }
-
-  .log-line { display: block; }
-  .log-dim  { color: #334155; }
-  .log-muted{ color: var(--muted); }
-  .log-green{ color: var(--green); }
-  .log-cyan { color: var(--accent); }
-  .log-amber{ color: var(--amber); }
-
-  /* Buttons */
+  .log-line  { display: block; }
+  .log-dim   { color: #334155; }
+  .log-muted { color: var(--muted); }
+  .log-green { color: var(--green); }
+  .log-red   { color: var(--red); }
+  .log-cyan  { color: var(--accent); }
+  .log-amber { color: var(--amber); }
+  .runs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+  }
+  .runs-table th {
+    text-align: left;
+    padding: 10px 16px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .runs-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(30,45,64,0.5);
+    color: var(--text);
+  }
+  .runs-table tr:last-child td { border-bottom: none; }
+  .runs-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 600;
+  }
+  .badge.ok      { background:rgba(34,197,94,0.15); color:var(--green); }
+  .badge.fail    { background:rgba(239,68,68,0.15); color:var(--red); }
+  .badge.running { background:rgba(245,158,11,0.15); color:var(--amber); }
   .actions-row {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
     margin-top: 8px;
   }
-
   .btn {
     display: inline-flex;
     align-items: center;
@@ -333,21 +291,10 @@
     border: none;
     transition: all 0.2s;
   }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #000;
-  }
+  .btn-primary { background: var(--accent); color: #000; }
   .btn-primary:hover { background: #33eaff; transform: translateY(-1px); }
-
-  .btn-secondary {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text);
-  }
+  .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
   .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-
-  /* Footer */
   footer {
     margin-top: 64px;
     padding-top: 24px;
@@ -358,31 +305,12 @@
     flex-wrap: wrap;
     gap: 12px;
   }
-
-  footer p {
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    color: var(--muted);
-  }
-
-  footer span {
-    color: var(--accent);
-  }
-
-  /* Animate in */
+  footer p { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+  footer span { color: var(--accent); }
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
   }
-
-  .card, .pipeline, .terminal {
-    animation: fadeUp 0.5s ease both;
-  }
-  .card:nth-child(1) { animation-delay: 0.05s; }
-  .card:nth-child(2) { animation-delay: 0.10s; }
-  .card:nth-child(3) { animation-delay: 0.15s; }
-  .pipeline          { animation-delay: 0.20s; }
-  .terminal          { animation-delay: 0.25s; }
 </style>
 </head>
 <body>
@@ -393,82 +321,43 @@
       <h1>demo<span>-agente</span></h1>
       <p>automatizacion-it / demo-agente &nbsp;·&nbsp; main</p>
     </div>
-    <div class="status-badge">
-      <div class="dot"></div>
-      workflow activo
+    <div class="status-badge loading" id="badge">
+      <div class="spinner" id="badge-icon"></div>
+      <span id="badge-text">consultando API...</span>
     </div>
   </header>
 
-  <!-- Métricas -->
+  <!-- Métricas en tiempo real -->
   <div class="grid">
     <div class="card">
       <div class="card-label">último run</div>
-      <div class="card-value green">✓ OK</div>
-      <div class="card-sub">9s · workflow_dispatch</div>
+      <div class="card-value" id="last-status">—</div>
+      <div class="card-sub" id="last-event">cargando...</div>
     </div>
     <div class="card">
-      <div class="card-label">workflow ID</div>
-      <div class="card-value accent">283865867</div>
-      <div class="card-sub">health-check.yml</div>
+      <div class="card-label">duración</div>
+      <div class="card-value accent" id="last-duration">—</div>
+      <div class="card-sub" id="last-id">run ID: —</div>
     </div>
     <div class="card">
-      <div class="card-label">frecuencia</div>
-      <div class="card-value amber">*/5 min</div>
-      <div class="card-sub">cron schedule · UTC</div>
+      <div class="card-label">hace</div>
+      <div class="card-value amber" id="last-ago">—</div>
+      <div class="card-sub" id="last-branch">branch: —</div>
     </div>
   </div>
 
-  <!-- Pipeline -->
-  <p class="section-title">pipeline CI/CD</p>
-  <div class="pipeline">
-    <div class="pipeline-steps">
-      <div class="step">
-        <div class="step-icon done">📝</div>
-        <div class="step-name">git push</div>
-      </div>
-      <div class="step-connector"></div>
-      <div class="step">
-        <div class="step-icon done">⚡</div>
-        <div class="step-name">trigger</div>
-      </div>
-      <div class="step-connector"></div>
-      <div class="step">
-        <div class="step-icon done">🐧</div>
-        <div class="step-name">ubuntu runner</div>
-      </div>
-      <div class="step-connector"></div>
-      <div class="step">
-        <div class="step-icon done">✅</div>
-        <div class="step-name">verificar</div>
-      </div>
-      <div class="step-connector"></div>
-      <div class="step">
-        <div class="step-icon done">🚀</div>
-        <div class="step-name">deploy</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Terminal log -->
-  <p class="section-title">log del último run</p>
+  <!-- Historial de runs -->
+  <p class="section-title">historial de runs</p>
   <div class="terminal">
     <div class="terminal-bar">
       <div class="t-dot red"></div>
       <div class="t-dot yellow"></div>
       <div class="t-dot green"></div>
-      <span class="terminal-title">health-check.yml · run #26484125492</span>
+      <span class="terminal-title">health-check.yml · últimos runs</span>
+      <span class="refresh-info" id="refresh-info">actualizando...</span>
     </div>
-    <div class="terminal-body">
-      <span class="log-line log-dim">──────────────────────────────────────────</span>
-      <span class="log-line log-muted">▶  Set up job</span>
-      <span class="log-line log-green">✓  runner: ubuntu-24.04 (2vCPU / 7GB RAM)</span>
-      <span class="log-line log-dim">──────────────────────────────────────────</span>
-      <span class="log-line log-muted">▶  Verificar estado del repo</span>
-      <span class="log-line log-cyan">   Verificacion ejecutada: Mon May 26 23:48 UTC 2026</span>
-      <span class="log-line log-cyan">   Rama: refs/heads/main</span>
-      <span class="log-line log-cyan">   Repo: automatizacion-it/demo-agente</span>
-      <span class="log-line log-dim">──────────────────────────────────────────</span>
-      <span class="log-line log-green">✓  Completed in 9s · exit code 0</span>
+    <div class="terminal-body" id="runs-body">
+      <span class="log-line log-amber">⟳ consultando GitHub API...</span>
     </div>
   </div>
 
@@ -483,13 +372,128 @@
     <a class="btn btn-secondary" href="https://github.com/automatizacion-it/demo-agente/issues" target="_blank">
       ◎ Ver Issues
     </a>
+    <button class="btn btn-secondary" onclick="fetchRuns()">
+      ↺ Refrescar
+    </button>
   </div>
 
   <footer>
     <p>desplegado con <span>GitHub Pages</span> · CI/CD via <span>GitHub Actions</span></p>
-    <p>automatizacion-it · 2026</p>
+    <p id="footer-time">automatizacion-it · 2026</p>
   </footer>
 
 </div>
+
+<script>
+const OWNER = 'automatizacion-it';
+const REPO  = 'demo-agente';
+const WORKFLOW = 'health-check.yml';
+const API = `https://api.github.com/repos/${OWNER}/${REPO}/actions/workflows/${WORKFLOW}/runs?per_page=8`;
+
+function timeAgo(dateStr) {
+  const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+  if (diff < 60)   return `${diff}s`;
+  if (diff < 3600) return `${Math.floor(diff/60)}m`;
+  if (diff < 86400)return `${Math.floor(diff/3600)}h`;
+  return `${Math.floor(diff/86400)}d`;
+}
+
+function duration(start, end) {
+  if (!start || !end) return '—';
+  const s = Math.floor((new Date(end) - new Date(start)) / 1000);
+  return s + 's';
+}
+
+function statusBadge(conclusion, status) {
+  if (status === 'in_progress') return '<span class="badge running">⟳ corriendo</span>';
+  if (conclusion === 'success') return '<span class="badge ok">✓ ok</span>';
+  if (conclusion === 'failure') return '<span class="badge fail">✗ fallo</span>';
+  return '<span class="badge running">— ' + (conclusion || status) + '</span>';
+}
+
+async function fetchRuns() {
+  const badge     = document.getElementById('badge');
+  const badgeIcon = document.getElementById('badge-icon');
+  const badgeText = document.getElementById('badge-text');
+
+  badge.className = 'status-badge loading';
+  badgeIcon.className = 'spinner';
+  badgeText.textContent = 'actualizando...';
+
+  try {
+    const res  = await fetch(API, { headers: { 'Accept': 'application/vnd.github+json' } });
+    const data = await res.json();
+    const runs = data.workflow_runs || [];
+
+    if (runs.length === 0) {
+      document.getElementById('runs-body').innerHTML =
+        '<span class="log-line log-amber">No hay runs todavía.</span>';
+      return;
+    }
+
+    // Último run — métricas
+    const last = runs[0];
+    const isOk = last.conclusion === 'success';
+
+    document.getElementById('last-status').className =
+      'card-value ' + (last.status === 'in_progress' ? 'amber' : isOk ? 'green' : 'red');
+    document.getElementById('last-status').textContent =
+      last.status === 'in_progress' ? '⟳ corriendo' : isOk ? '✓ OK' : '✗ fallo';
+    document.getElementById('last-event').textContent =
+      last.event + ' · ' + last.head_branch;
+    document.getElementById('last-duration').textContent =
+      duration(last.run_started_at, last.updated_at);
+    document.getElementById('last-id').textContent =
+      'run ID: ' + last.id;
+    document.getElementById('last-ago').textContent =
+      timeAgo(last.updated_at);
+    document.getElementById('last-branch').textContent =
+      'branch: ' + last.head_branch;
+
+    // Badge principal
+    badge.className = 'status-badge ' + (isOk ? '' : 'error');
+    badgeIcon.className = isOk ? 'dot' : 'dot';
+    badgeIcon.style.background = isOk ? 'var(--green)' : 'var(--red)';
+    badgeText.textContent = isOk ? 'workflow activo' : 'último run falló';
+
+    // Tabla de historial
+    let html = '<table class="runs-table"><thead><tr>' +
+      '<th>estado</th><th>evento</th><th>duración</th><th>hace</th><th>ID</th>' +
+      '</tr></thead><tbody>';
+
+    runs.forEach(r => {
+      html += `<tr>
+        <td>${statusBadge(r.conclusion, r.status)}</td>
+        <td>${r.event}</td>
+        <td>${duration(r.run_started_at, r.updated_at)}</td>
+        <td>${timeAgo(r.updated_at)}</td>
+        <td style="color:var(--muted)">${r.id}</td>
+      </tr>`;
+    });
+
+    html += '</tbody></table>';
+    document.getElementById('runs-body').innerHTML = html;
+
+    // Footer con hora de última actualización
+    const now = new Date().toLocaleTimeString('es-CO');
+    document.getElementById('refresh-info').textContent = 'última actualización: ' + now;
+    document.getElementById('footer-time').textContent =
+      'automatizacion-it · actualizado ' + now;
+
+  } catch(e) {
+    badge.className = 'status-badge error';
+    badgeIcon.className = 'dot';
+    badgeText.textContent = 'error de conexión';
+    document.getElementById('runs-body').innerHTML =
+      '<span class="log-line log-red">✗ No se pudo conectar con la API de GitHub.</span>';
+  }
+}
+
+// Cargar al inicio
+fetchRuns();
+
+// Auto-refresh cada 60 segundos
+setInterval(fetchRuns, 60000);
+</script>
 </body>
 </html>
