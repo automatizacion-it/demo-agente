@@ -1,0 +1,59 @@
+﻿name: Log a Google Sheets
+
+on:
+  workflow_run:
+    workflows: ["Health Check cada 5 minutos"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+  log-sheets:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repo
+        uses: actions/checkout@v4
+
+      - name: Instalar dependencias
+        run: pip install gspread google-auth
+
+      - name: Escribir en Google Sheets
+        env:
+          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          SHEET_ID: 1cjav60NnPKarLQYFi2NWGL2AnVg1kgVqyhxaRAo1Y-A
+          RUN_STATUS: ${{ github.event.workflow_run.conclusion || 'manual' }}
+          RUN_ID: ${{ github.event.workflow_run.id || github.run_id }}
+          RUN_BRANCH: ${{ github.event.workflow_run.head_branch || 'main' }}
+          RUN_EVENT: ${{ github.event.workflow_run.event || 'workflow_dispatch' }}
+          RUN_DURATION: ${{ github.event.workflow_run.run_duration_ms || '0' }}
+        run: |
+          cat << 'EOF' > log_run.py
+          import gspread, json, os
+          from google.oauth2.service_account import Credentials
+          from datetime import datetime
+
+          creds_json = json.loads(os.environ['GOOGLE_CREDENTIALS'])
+          scopes = ['https://www.googleapis.com/auth/spreadsheets']
+          creds = Credentials.from_service_account_info(creds_json, scopes=scopes)
+          client = gspread.authorize(creds)
+
+          sheet = client.open_by_key(os.environ['SHEET_ID']).sheet1
+
+          now = datetime.utcnow()
+          duration_s = int(os.environ.get('RUN_DURATION', 0)) // 1000
+
+          row = [
+            now.strftime('%Y-%m-%d'),
+            now.strftime('%H:%M:%S'),
+            os.environ.get('RUN_STATUS', 'unknown'),
+            str(duration_s) + 's',
+            os.environ.get('RUN_BRANCH', 'main'),
+            os.environ.get('RUN_ID', ''),
+            os.environ.get('RUN_EVENT', ''),
+          ]
+
+          sheet.append_row(row)
+          print(f"✅ Fila escrita: {row}")
+          EOF
+          python log_run.py
